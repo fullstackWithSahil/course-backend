@@ -9,6 +9,10 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "dockerode": "2.5.5"
+    "@supabase/supabase-js": "^2.47.11",
+    "@types/express": "^5.0.0",
+    "dockerode": "2.5.5",
+    "express": "^4.21.2",
+    "supabase": ">=1.8.1"
   }
 }
