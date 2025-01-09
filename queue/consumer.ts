@@ -5,7 +5,6 @@ const QUEUE_NAME = "videos";
 import fs from 'fs';
 import path from "path";
 import Transcode from "../transcode";
-import fileUploder from "./fileUploder";
 import uploadFiles from "./uplodefiles";
 
 const supabase = createClient<Database>(
@@ -62,6 +61,7 @@ async function consumeMessages() {
             fs.unlinkSync(file2);
             fs.unlinkSync(file3);
             fs.unlinkSync(file4);
+            channel.ack(msg);
           },
           { noAck: false } // Require explicit acknowledgment
         );

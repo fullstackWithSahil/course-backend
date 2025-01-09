@@ -1,5 +1,5 @@
 {
-  "name": "freshbackend",
+  "name": "course-backend",
   "module": "index.ts",
   "type": "module",
   "devDependencies": {
@@ -9,12 +9,12 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.47.11",
+    "@supabase/supabase-js": "^2.47.12",
+    "@types/amqplib": "^0.10.6",
     "@types/express": "^5.0.0",
-    "bullmq": "^5.34.8",
-    "dockerode": "2.5.5",
+    "amqplib": "^0.10.5",
+    "axios": "^1.7.9",
     "express": "^4.21.2",
-    "ioredis": "^5.4.2",
     "supabase": ">=1.8.1"
   }
 }

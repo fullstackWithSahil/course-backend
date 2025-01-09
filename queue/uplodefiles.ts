@@ -56,5 +56,3 @@ function generateKey(tempKey: string, file: string) {
 
     return returnKey;
 }
-
-uploadFiles("buisnesstool-course/test");

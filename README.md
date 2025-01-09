@@ -1,4 +1,4 @@
-# freshbackend
+# course-backend
 
 To install dependencies:
 
