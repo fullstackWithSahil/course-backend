@@ -3,6 +3,9 @@ import type { Request, Response } from "express";
 import fs from "fs";
 import path from "path";
 import type { Database } from "../database.types";
+import { Queue } from 'bullmq';
+export const myQueue = new Queue('videos');
+
 
 const supabase = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL || "",
@@ -63,6 +66,7 @@ export default async function controller(req: Request, res: Response) {
 
       // Write file to disk
       await fs.promises.writeFile(localFilePath, Buffer.from(await data.arrayBuffer()) as any);
+      await myQueue.add(fileName,{path:localFilePath})
 
       return `Downloaded: ${fileName}`;
     });
