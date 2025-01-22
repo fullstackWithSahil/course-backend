@@ -1,10 +1,13 @@
 import express from 'express';
-import type { Request, Response } from 'express';
 import multer from 'multer';
 import type { FileFilterCallback } from 'multer';
 import fs from 'fs';
 import cors from 'cors';
 import path from 'path';
+import type { Request, Response } from 'express';
+import connectRabbitMQ from './queues/connectQueue';
+import type { Channel } from 'amqplib';
+
 
 interface MulterFile {
     fieldname: string;
@@ -18,10 +21,11 @@ interface MulterFile {
     buffer: Buffer;
 }
 
+
 // Define multer storage configuration
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadPath = file.fieldname === 'video' ? 'uploads/videos' : 'uploads/thumbnails';
+        const uploadPath = file.fieldname === 'video' ? 'queues/uploads/videos' : 'queues/uploads/thumbnails';
         fs.mkdirSync(uploadPath, { recursive: true }); // Ensure the directory exists
         cb(null, uploadPath);
     },
@@ -51,41 +55,54 @@ app.use(express.json());
 
 app.use(cors());
 
+export let channel:Channel|undefined;
+
 // Define route for uploading video and thumbnail
 app.post(
     '/api/addVideo',
     upload.fields([{ name: 'video', maxCount: 1 }, { name: 'thumbnail', maxCount: 1 }]),
-    async (req: Request, res: Response) => {
-        try {
-            const videoFile = (req.files as { [fieldname: string]: MulterFile[] })['video']?.[0];
-            const thumbnailFile = (req.files as { [fieldname: string]: MulterFile[] })['thumbnail']?.[0];
+    async (req: Request, res: Response): Promise<void> => {
+    try {
+        const videoFile = (req.files as { [fieldname: string]: MulterFile[] })['video']?.[0];
+        const thumbnailFile = (req.files as { [fieldname: string]: MulterFile[] })['thumbnail']?.[0];
 
-            if (!videoFile || !thumbnailFile) {
-                return res.status(400).json({
-                    title: 'Invalid Upload',
-                    description: 'Both video and thumbnail are required.'
-                });
-            }
-
-            console.log('Video uploaded:', videoFile);
-            console.log('Thumbnail uploaded:', thumbnailFile);
-
-            res.json({
-                message: 'Video and thumbnail uploaded successfully',
-                videoPath: videoFile.path,
-                thumbnailPath: thumbnailFile.path
+        if (!videoFile || !thumbnailFile) {
+            res.status(400).json({
+                title: 'Invalid Upload',
+                description: 'Both video and thumbnail are required.'
             });
-        } catch (error) {
-            console.error('Error:', error);
-            res.status(500).json({
-                title: 'Error adding video',
-                description: 'There was an error uploading the video. Please try again later.'
-            });
+            return;
         }
+
+        console.log('Video uploaded:', videoFile);
+        console.log('Thumbnail uploaded:', thumbnailFile);
+
+        if(!channel){
+            res.json({
+                title:"There was an error uploading the video",
+                description:"There was an error uploading the video try again later"
+            })
+            return
+        }
+
+        channel.sendToQueue(
+            "videos", 
+            Buffer.from(JSON.stringify({path:videoFile.filename})), 
+            { persistent: true }
+        );
+
+        res.json({message: 'Video and thumbnail uploaded successfully'});
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            title: 'Error adding video',
+            description: 'There was an error uploading the video. Please try again later.'
+        });
     }
-);
+});
 
 const port = process.env.PORT || 8080;
-app.listen(port, () => {
-    console.log('Listening on port', port);
-});
+app.listen(port,async()=>{
+    console.log("listening on port",port);
+    channel = await connectRabbitMQ();
+})
