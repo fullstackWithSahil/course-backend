@@ -2,7 +2,7 @@ import amqp from "amqplib";
 const QUEUE_NAME = "videos";
 import fs from 'fs';
 import path from "path";
-import Transcode from "../transcode";
+import Transcode from "../utils/transcode";
 import uploadFiles from "./uplodeFile";
 
 
@@ -25,24 +25,24 @@ async function consumeMessages() {
             console.log(`Processed message: ${data.path}`);
 
             // //trascode the video, convert it to hls 
-            // await Transcode("1080");
-            // await Transcode("720");
-            // await Transcode("360");
+            await Transcode("1080",data.path);
+            await Transcode("720",data.path);
+            await Transcode("360",data.path);
             await Transcode("144",data.path);
 
-            // //upload it to the storage and deleting it from the folder
-            // await uploadFiles(data.path);
+            //upload it to the storage and deleting it from the folder
+            await uploadFiles(data.key);
 
-            // //deleting the input and output videos
-            // fs.unlinkSync(inputPath);
-            // const file1 = path.join(__dirname, 'output/i1080.mp4');
-            // const file2 = path.join(__dirname, 'output/i720.mp4');
-            // const file3 = path.join(__dirname, 'output/i360.mp4');
-            // const file4 = path.join(__dirname, 'output/i144.mp4');
-            // fs.unlinkSync(file1);
-            // fs.unlinkSync(file2);
-            // fs.unlinkSync(file3);
-            // fs.unlinkSync(file4);
+            //deleting the input and output videos
+            // fs.unlinkSync(data.path);
+            const file1 = path.join(__dirname, 'output/i1080.mp4');
+            const file2 = path.join(__dirname, 'output/i720.mp4');
+            const file3 = path.join(__dirname, 'output/i360.mp4');
+            const file4 = path.join(__dirname, 'output/i144.mp4');
+            fs.unlinkSync(file1);
+            fs.unlinkSync(file2);
+            fs.unlinkSync(file3);
+            fs.unlinkSync(file4);
             channel.ack(msg);
           },
           { noAck: false } // Require explicit acknowledgment

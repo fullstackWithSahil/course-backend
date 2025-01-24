@@ -1,10 +1,11 @@
 import path from "path";
 import fs from "fs";
-import fileUploder from "./fileUploder";
+import fileUploder from "../utils/fileUploder";
 
 
-export default async function uploadFiles(tempKey: string) {
+export default async function uploadFiles(key:string) {
     try {
+        //preparing a list of all the file to uplode
         const resolutions = ["1080", "720", "360", "144"];
         let filesToUpload: string[] = [];
         resolutions.forEach((resolution) => {
@@ -15,12 +16,13 @@ export default async function uploadFiles(tempKey: string) {
             })
         });
 
+
         while (filesToUpload.length!=0) {
             const uploadPromises = filesToUpload.map(async (file) => {
                 try {
                     console.log("Uploading file", file);
-                    const key = generateKey(tempKey, file);
-                    const url = await fileUploder(file, key);
+                    const genkey = generateKey(key, file);
+                    const url = await fileUploder(file,genkey);
                     fs.unlinkSync(file);
                     console.log(url);
                     filesToUpload = filesToUpload.filter((f) => f !== file);
