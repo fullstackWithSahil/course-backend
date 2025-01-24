@@ -34,7 +34,7 @@ async function consumeMessages() {
             await uploadFiles(data.key);
 
             //deleting the input and output videos
-            // fs.unlinkSync(data.path);
+            console.log("data path>>",data.path);
             const file1 = path.join(__dirname, 'output/i1080.mp4');
             const file2 = path.join(__dirname, 'output/i720.mp4');
             const file3 = path.join(__dirname, 'output/i360.mp4');

@@ -55,6 +55,7 @@ function generateKey(tempKey: string, file: string) {
     } else {
         returnKey = returnKey + "/144/" + fileName;
     }
+    console.log("return key"+returnKey)
 
     return returnKey;
 }

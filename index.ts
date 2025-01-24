@@ -4,13 +4,13 @@ import type { FileFilterCallback } from 'multer';
 import fs from 'fs';
 import cors from 'cors';
 import path from 'path';
-import type { Request, Response } from 'express';
 import connectRabbitMQ from './queues/connectQueue';
 import type { Channel } from 'amqplib';
-import fileUploder from './utils/fileUploder';
+import addVideo from './addVideo';
+import { uploadThumbnail } from './utils/ThumbnailUploder';
 
 
-interface MulterFile {
+export interface MulterFile {
     fieldname: string;
     originalname: string;
     encoding: string;
@@ -68,51 +68,14 @@ export let channel:Channel|undefined;
 app.post(
     '/api/addVideo',
     upload.fields([{ name: 'video', maxCount: 1 }, { name: 'thumbnail', maxCount: 1 }]),
-    async (req: Request, res: Response): Promise<void> => {
-    try {
-        const videoFile = (req.files as { [fieldname: string]: MulterFile[] })['video']?.[0];
-        const thumbnailFile = (req.files as { [fieldname: string]: MulterFile[] })['thumbnail']?.[0];
-
-        if (!videoFile || !thumbnailFile) {
-            res.status(400).json({
-                title: 'Invalid Upload',
-                description: 'Both video and thumbnail are required.'
-            });
-            return;
-        }
-
-        if(!channel){
-            res.json({
-                title:"There was an error uploading the video",
-                description:"There was an error uploading the video try again later"
-            })
-            return
-        }
-
-        channel.sendToQueue(
-            "videos", 
-            Buffer.from(JSON.stringify({
-                path:videoFile.filename,
-                key:req.body.key
-            })), 
-            { persistent: true }
-        );
-
-        res.json({message: 'Video and thumbnail uploaded successfully'});
-    } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({
-            title: 'Error adding video',
-            description: 'There was an error uploading the video. Please try again later.'
-        });
-    }
-});
+    addVideo
+);
 
 app.post('/api/addThumbnail',upload.single('thumbnail'),async(req,res)=>{
     try {
         const thumbnailFile = (req.file as  MulterFile );
         const thumbnailPath = path.join(__dirname,"thumbnails",thumbnailFile.filename);
-        await fileUploder(thumbnailPath,req.body.key);
+        await uploadThumbnail(thumbnailPath,req.body.key);
         fs.unlinkSync(thumbnailPath);
         res.send("ok");
     } catch (error) {
