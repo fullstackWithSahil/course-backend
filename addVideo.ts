@@ -1,9 +1,6 @@
 import type { Request, Response } from 'express';
 import { channel, type MulterFile } from './index';
-import fileUploder from './utils/fileUploder';
-import fs from "fs";
 import path from 'path';
-import { uploadThumbnail } from './utils/ThumbnailUploder';
 
 export default async function addVideo(req: Request, res: Response): Promise<void>{
     try {
@@ -31,14 +28,20 @@ export default async function addVideo(req: Request, res: Response): Promise<voi
 
         //uploding the thumbnail
         const thumbnailPath = path.join(__dirname,thumbnailFile.path);
-        await uploadThumbnail(thumbnailPath,req.body.key);
+        const mimetype = thumbnailFile.mimetype.slice(thumbnailFile.mimetype.indexOf('/') + 1, thumbnailFile.mimetype.length);
+        const thumbnailKey = req.body.key + "thumbnail."+mimetype;
         
         //adding the video to the queue
+        console.log("enquing to queue.....",videoFile.fieldname);
         channel.sendToQueue(
             "videos", 
             Buffer.from(JSON.stringify({
                 path:videoFile.filename,
-                key:req.body.key
+                key:req.body.key,
+                thumbnail:{
+                    path:thumbnailPath,
+                    key:thumbnailKey
+                }
             })), 
             { persistent: false }
         );

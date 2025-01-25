@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from "path";
 import Transcode from "../utils/transcode";
 import uploadFiles from "./uplodeFile";
+import { uploadThumbnail } from "../utils/ThumbnailUploder";
 
 
 async function consumeMessages() {
@@ -19,10 +20,14 @@ async function consumeMessages() {
               if (msg == null) {
                 return;
               }
+
             //pares the path
             const message = msg.content.toString();
             const data = JSON.parse(message);
             console.log(`Processed message: ${data.path}`);
+
+            //uplode the thumbnail
+            await uploadThumbnail(data.thumbnail.path,data.thumbnail.key);
 
             // //trascode the video, convert it to hls 
             await Transcode("1080",data.path);
