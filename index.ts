@@ -76,7 +76,6 @@ app.post('/api/addThumbnail',upload.single('thumbnail'),async(req,res)=>{
         const thumbnailFile = (req.file as  MulterFile );
         const thumbnailPath = path.join(__dirname,"thumbnails",thumbnailFile.filename);
         await uploadThumbnail(thumbnailPath,req.body.key);
-        fs.unlinkSync(thumbnailPath);
         res.send("ok");
     } catch (error) {
         console.log("error creating a thumbnail", error);
