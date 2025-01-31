@@ -76,6 +76,7 @@ app.post('/api/addThumbnail',upload.single('thumbnail'),async(req,res)=>{
         const thumbnailFile = (req.file as  MulterFile );
         const thumbnailPath = path.join(__dirname,"thumbnails",thumbnailFile.filename);
         await uploadThumbnail(thumbnailPath,req.body.key);
+        fs.unlinkSync(thumbnailPath);
         res.send("ok");
     } catch (error) {
         console.log("error creating a thumbnail", error);
@@ -84,6 +85,10 @@ app.post('/api/addThumbnail',upload.single('thumbnail'),async(req,res)=>{
             description:"There was an error creating course try again later"
         })
     }
+})
+
+app.get('/api/test', async(req,res)=>{
+    res.send("<h1>Running...</h1>");
 })
 
 const port = process.env.PORT || 8080;

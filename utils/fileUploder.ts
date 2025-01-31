@@ -6,7 +6,7 @@ export default async function fileUploder(filePath:string,key:string){
   const fileStream = fs.createReadStream(filePath);
   const uniqueFilename = key;
 
-  let yourStorageZone="development-courses";
+  let yourStorageZone="buisnesstool-course";
   const response = await axios.put(
     //url
     //stream
@@ -15,7 +15,7 @@ export default async function fileUploder(filePath:string,key:string){
     fileStream,
     {
       headers: {
-        AccessKey: "c33ffc82-80e6-48b0-a1f483690dfd-19e5-4aa3",
+        AccessKey: "8cb972e1-29b1-4405-9235d083f503-00b0-4b0b",
       },
     }
   );
