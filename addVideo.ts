@@ -28,8 +28,7 @@ export default async function addVideo(req: Request, res: Response): Promise<voi
 
         //uploding the thumbnail
         const thumbnailPath = path.join(__dirname,thumbnailFile.path);
-        const mimetype = thumbnailFile.mimetype.slice(thumbnailFile.mimetype.indexOf('/') + 1, thumbnailFile.mimetype.length);
-        const thumbnailKey = req.body.key + "thumbnail."+mimetype;
+        const thumbnailKey = req.body.key + "thumbnail";
         
         //adding the video to the queue
         console.log("enquing to queue.....",videoFile.fieldname);

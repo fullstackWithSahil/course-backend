@@ -1,14 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
-import axios from 'axios';
+import sendDiscordMessage from '../utils/Discord';
 
-async function sendDiscordMessage(message:string) {
-    try {
-        await axios.post(process.env.DISCORD_WEBHOOK_URL!,{ content: message });
-    } catch (error) {
-        console.error('Failed to send message to Discord:', error);
-    }
-}
 
 export default async function setup() {
     const outputDir = path.join(__dirname, 'output');

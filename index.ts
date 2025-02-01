@@ -76,8 +76,9 @@ app.post('/api/addThumbnail',upload.single('thumbnail'),async(req,res)=>{
         const thumbnailFile = (req.file as  MulterFile );
         const thumbnailPath = path.join(__dirname,"thumbnails",thumbnailFile.filename);
         await uploadThumbnail(thumbnailPath,req.body.key);
-        fs.unlinkSync(thumbnailPath);
-        res.send("ok");
+        const url = "https://buisnesstools-course.b-cdn.net/"+req.body.key+".webp";
+        console.log({url})
+        res.json({url});
     } catch (error) {
         console.log("error creating a thumbnail", error);
         res.json({
