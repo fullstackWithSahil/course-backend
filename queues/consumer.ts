@@ -5,12 +5,14 @@ import path from "path";
 import Transcode from "../utils/transcode";
 import uploadFiles from "./uplodeFile";
 import { uploadThumbnail } from "../utils/ThumbnailUploder";
+import setup from "./setup";
 
 
 async function consumeMessages() {
     try {
         const connection = await amqp.connect("amqp://localhost");
         const channel = await connection.createChannel();
+        await setup();
         await channel.assertQueue(QUEUE_NAME, { durable: true });
 
         console.log(`Waiting for messages in ${QUEUE_NAME}. Press CTRL+C to exit.`);
@@ -47,7 +49,9 @@ async function consumeMessages() {
             fs.unlinkSync(file2);
             fs.unlinkSync(file3);
             fs.unlinkSync(file4);
-            fs.unlinkSync(data.path);
+            const file5 = path.join(__dirname,"uploads/videos",data.path)
+            console.log({file5})
+            fs.unlinkSync(file5);
             channel.ack(msg);
           },
           { noAck: false } // Require explicit acknowledgment
