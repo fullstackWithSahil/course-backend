@@ -1,8 +1,9 @@
 import amqp from "amqplib";
 import fs from 'fs';
 import path from "path";
-import Transcode from "./transcode";
+import Transcode from "../utils/transcode";
 import uploadFiles from "./uplodeFile";
+import { uploadThumbnail } from "../utils/ThumbnailUploder";
 import setup from "./setup";
 
 const QUEUE_NAME = "videos";
@@ -29,6 +30,9 @@ async function consumeMessages() {
                     const message = msg.content.toString();
                     const data = JSON.parse(message);
                     console.log(`Processing message: ${data.path}`);
+                    
+                    // Upload thumbnail first
+                    await uploadThumbnail(data.thumbnail.path, data.thumbnail.key);
                     
                     // Process transcoding sequentially
                     const resolutions:['1080', '720', '360', '144'] = ['1080', '720', '360', '144'];

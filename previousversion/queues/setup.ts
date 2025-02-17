@@ -27,3 +27,5 @@ export default async function setup() {
 
     console.log('All folders created successfully.');
 }
+
+setup()

@@ -4,9 +4,10 @@ import type { FileFilterCallback } from 'multer';
 import fs from 'fs';
 import cors from 'cors';
 import path from 'path';
-import connectRabbitMQ from './queues/ConnectQueue';
+import connectRabbitMQ from './queues/connectQueue';
 import type { Channel } from 'amqplib';
-import { addVideo } from './routes/VideoTranscoding';
+import addVideo from './addVideo';
+import { uploadThumbnail } from './utils/ThumbnailUploder';
 
 
 export interface MulterFile {
@@ -65,11 +66,27 @@ export let channel:Channel|undefined;
 
 // Define route for uploading video and thumbnail
 app.post(
-    '/api/video/transcode',
+    '/api/addVideo',
     upload.fields([{ name: 'video', maxCount: 1 }, { name: 'thumbnail', maxCount: 1 }]),
     addVideo
 );
 
+app.post('/api/addThumbnail',upload.single('thumbnail'),async(req,res)=>{
+    try {
+        const thumbnailFile = (req.file as  MulterFile );
+        const thumbnailPath = path.join(__dirname,"thumbnails",thumbnailFile.filename);
+        await uploadThumbnail(thumbnailPath,req.body.key);
+        const url = "https://buisnesstools-course.b-cdn.net/"+req.body.key+".webp";
+        console.log({url})
+        res.json({url});
+    } catch (error) {
+        console.log("error creating a thumbnail", error);
+        res.json({
+            title:"There was an error creating course",
+            description:"There was an error creating course try again later"
+        })
+    }
+})
 
 app.get('/api/test', async(req,res)=>{
     res.send("<h1>Running...</h1>");
