@@ -4,6 +4,7 @@ import path from "path";
 import Transcode from "./transcode";
 import uploadFiles from "./uplodeFile";
 import setup from "./setup";
+import deleteFolderInCDN from "../utils/deleteFile";
 
 const QUEUE_NAME = "videos";
 
@@ -11,6 +12,7 @@ async function consumeMessages() {
     try {
         const connection = await amqp.connect("amqp://localhost");
         const channel = await connection.createChannel();
+        const resolutions:['1080', '720', '360', '144'] = ['1080', '720', '360', '144'];
         
         // Set prefetch to 1 to ensure we process one message at a time
         await channel.prefetch(1);
@@ -30,8 +32,15 @@ async function consumeMessages() {
                     const data = JSON.parse(message);
                     console.log(`Processing message: ${data.path}`);
                     
+                    //delete the videos from bunn CDN if they already exist
+                    if (data.update) {
+                        const promises = resolutions.map(resolution => 
+                            deleteFolderInCDN(`${data.key}/${resolution}`)
+                        );
+                        await Promise.all(promises);
+                    }
+                    
                     // Process transcoding sequentially
-                    const resolutions:['1080', '720', '360', '144'] = ['1080', '720', '360', '144'];
                     for (const resolution of resolutions) {
                         console.log(`Transcoding ${resolution}p version...`);
                         await Transcode(resolution, data.path);

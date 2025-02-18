@@ -1,9 +1,9 @@
 import type { Response,Request } from "express";
 import {channel,type MulterFile} from "../index"
+import deleteFolderInCDN from "../utils/deleteFile";
 
 export async function addVideo(req:Request,res:Response){
     try {
-        console.log({key:req.body.key})
         //getting the files for video and thumbnail
         const videoFile = (req.files as { [fieldname: string]: MulterFile[] })['video']?.[0];
         
@@ -33,6 +33,7 @@ export async function addVideo(req:Request,res:Response){
             Buffer.from(JSON.stringify({
                 path: videoFile.filename,
                 key:req.body.key,
+                update:req.body.update
             })), 
             { persistent: false }
         );

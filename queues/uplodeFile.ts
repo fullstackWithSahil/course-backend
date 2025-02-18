@@ -41,21 +41,21 @@ export default async function uploadFiles(key:string) {
 
 function generateKey(tempKey: string, file: string) {
     let returnKey = tempKey;
-    // const key = file.split("\\");
-    // const fileName = key[key.length - 1];
-    // key.pop();
+    const key = file.split("\\");
+    const fileName = key[key.length - 1];
+    key.pop();
 
-    // const key2 = key.join("\\")
-    // if (key2.includes("1080")) {
-    //     returnKey = returnKey + "/1080/" + fileName;
-    // } else if (key2.includes("720")) {
-    //     returnKey = returnKey + "/720/" + fileName;
-    // } else if (key2.includes("360")) {
-    //     returnKey = returnKey + "/360/" + fileName;
-    // } else {
-    //     returnKey = returnKey + "/144/" + fileName;
-    // }
-    // console.log("return key"+returnKey)
+    const key2 = key.join("\\")
+    if (key2.includes("1080")) {
+        returnKey = returnKey + "/1080/" + fileName;
+    } else if (key2.includes("720")) {
+        returnKey = returnKey + "/720/" + fileName;
+    } else if (key2.includes("360")) {
+        returnKey = returnKey + "/360/" + fileName;
+    } else {
+        returnKey = returnKey + "/144/" + fileName;
+    }
+    console.log("return key"+returnKey)
 
     return returnKey;
 }
