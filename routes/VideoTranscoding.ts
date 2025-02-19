@@ -37,6 +37,18 @@ export async function addVideo(req:Request,res:Response){
             })), 
             { persistent: false }
         );
+        //delete the videos from bunn CDN if they already exist
+        if (req.body.update) {
+            const promises =[
+                deleteFolderInCDN(`${req.body.key}/1080`),
+                deleteFolderInCDN(`${req.body.key}/720`),
+                deleteFolderInCDN(`${req.body.key}/360`),
+                deleteFolderInCDN(`${req.body.key}/144`),
+            ];
+            await Promise.all(promises).then(() =>{
+                console.log("videos deleted successfully");
+            })
+        }
         
         res.json({message: 'Video uploaded successfully'});
     } catch (error) {

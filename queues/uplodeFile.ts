@@ -16,15 +16,25 @@ export default async function uploadFiles(key:string) {
             })
         });
 
-
+        //uploding to bunny sometimes leads to errors that is why i create an array of all the files and upload them again and again until the array is empty
         while (filesToUpload.length!=0) {
-            const uploadPromises = filesToUpload.map(async (file) => {
+            //bunny has an API limit of 100 requests that is why i uplode files in batches of 95 just to be safe
+            let currentBatch = [""];
+            if(filesToUpload.length>=95){
+                currentBatch = filesToUpload.slice(0,95);
+            }else{
+                currentBatch = filesToUpload;
+            }
+
+            //uploding the current batch of files
+            const uploadPromises = currentBatch.map(async (file) => {
                 try {
                     console.log("Uploading file", file);
                     const genkey = generateKey(key, file);
                     const url = await fileUploder(file,genkey);
                     fs.unlinkSync(file);
                     console.log(url);
+                    //removing the files that were uploded successfully from the array of files
                     filesToUpload = filesToUpload.filter((f) => f !== file);
                 } catch (error) {
                     console.log("error uploding file" + file);

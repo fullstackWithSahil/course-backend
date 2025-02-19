@@ -6,8 +6,6 @@ const execPromise = util.promisify(exec)
 export default async function Transcode(resolution: "1080" | "720" | "360" | "144",input:string) {
     const scale = getRatio(resolution);
     try {
-        console.log({command:`ffmpeg -i uploads/videos/${input} -c:v libx264 -c:a aac -vf scale=${scale} -f mp4 output/i${resolution}.mp4`})
-
         // Step 1: Transcode video
         await execPromise(`ffmpeg -i uploads/videos/${input} -c:v libx264 -c:a aac -vf scale=${scale} -f mp4 output/i${resolution}.mp4`);
 

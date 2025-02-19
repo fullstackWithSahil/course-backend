@@ -4,7 +4,6 @@ import path from "path";
 import Transcode from "./transcode";
 import uploadFiles from "./uplodeFile";
 import setup from "./setup";
-import deleteFolderInCDN from "../utils/deleteFile";
 
 const QUEUE_NAME = "videos";
 
@@ -31,14 +30,6 @@ async function consumeMessages() {
                     const message = msg.content.toString();
                     const data = JSON.parse(message);
                     console.log(`Processing message: ${data.path}`);
-                    
-                    //delete the videos from bunn CDN if they already exist
-                    if (data.update) {
-                        const promises = resolutions.map(resolution => 
-                            deleteFolderInCDN(`${data.key}/${resolution}`)
-                        );
-                        await Promise.all(promises);
-                    }
                     
                     // Process transcoding sequentially
                     for (const resolution of resolutions) {
