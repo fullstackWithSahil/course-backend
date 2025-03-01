@@ -4,11 +4,12 @@ import type { FileFilterCallback } from "multer";
 import fs from "fs";
 import cors from "cors";
 import path from "path";
-import connectRabbitMQ from "./queues/ConnectQueue";
+import connectRabbitMQ from "./queues/connectQueue";
 import type { Channel } from "amqplib";
 import { addVideo } from "./routes/VideoTranscoding";
 import logSystemStats from "./monitering/monitering";
 import getMetrics from "./routes/metrics";
+import { getLogs } from "./routes/getlogs";
 
 
 export interface MulterFile {
@@ -84,9 +85,11 @@ app.get("/api/test", async (req, res) => {
 
 app.get("/api/metrics/data",getMetrics);
 
+app.get("/api/metrics/logs",getLogs);
+
 const port = process.env.PORT || 8080;
 app.listen(port, async () => {
   console.log("listening on port", port);
-  channel = await connectRabbitMQ();
+  // channel = await connectRabbitMQ();
   setInterval(logSystemStats, 5000);
 });

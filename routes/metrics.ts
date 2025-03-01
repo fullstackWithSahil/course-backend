@@ -1,6 +1,7 @@
 import type { Response,Request } from "express";
-import { Database } from "bun:sqlite";
-const db = new Database("../database.sqlite", { create: true });
+import {Database} from "bun:sqlite"
+
+const db = new Database("./database.sqlite", { create: true });
 
 export default async function getMetrics(req:Request, res:Response){
     try {

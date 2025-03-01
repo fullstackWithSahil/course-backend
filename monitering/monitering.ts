@@ -1,8 +1,9 @@
 //this is the code in monitering.ts
 import os from "os";
-import { Database } from "bun:sqlite";
-const db = new Database("../database.sqlite", { create: true });
+import { join } from "path";
+import {Database} from "bun:sqlite"
 
+const db = new Database(join(import.meta.dir, "../database.sqlite"), { create: true });
 
 
 function getCPUUsage() {
@@ -58,8 +59,8 @@ export default async function logSystemStats() {
   const query = db.query(`INSERT INTO system_metrics (
     cpu_usage, memory_usage_gb
   ) VALUES (
-    ${Number.isNaN(cpuUsage)?0:Number(cpuUsage)}, ${Number.isNaN(memoryUsage.usedMemoryGB)?0:Number(memoryUsage.usedMemoryGB)}
-  )`);
-  
+    ${Number.isNaN(cpuUsage)||cpuUsage<0?0:Number(cpuUsage)}, 
+    ${Number.isNaN(memoryUsage.usedMemoryGB)?0:Number(memoryUsage.usedMemoryGB)}
+  )`);  
   query.run();
 }
