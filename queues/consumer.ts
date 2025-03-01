@@ -4,6 +4,7 @@ import path from "path";
 import Transcode from "./transcode";
 import uploadFiles from "./uplodeFile";
 import setup from "./setup";
+import logger from "../monitering/logging";
 
 const QUEUE_NAME = "videos";
 
@@ -19,7 +20,7 @@ async function consumeMessages() {
         await setup();
         await channel.assertQueue(QUEUE_NAME, { durable: true });
         
-        console.log(`Waiting for messages in ${QUEUE_NAME}. Press CTRL+C to exit.`);
+        logger.info(`Waiting for messages in ${QUEUE_NAME}. Press CTRL+C to exit.`);
         
         channel.consume(
             QUEUE_NAME,
@@ -29,11 +30,11 @@ async function consumeMessages() {
                 try {
                     const message = msg.content.toString();
                     const data = JSON.parse(message);
-                    console.log(`Processing message: ${data.path}`);
+                    logger.info(`Processing message: ${data.path}`);
                     
                     // Process transcoding sequentially
                     for (const resolution of resolutions) {
-                        console.log(`Transcoding ${resolution}p version...`);
+                        logger.info(`Transcoding ${resolution}p version...`);
                         await Transcode(resolution, data.path);
                     }
                     
@@ -52,17 +53,17 @@ async function consumeMessages() {
                     for (const file of filesToDelete) {
                         try {
                             await fs.promises.unlink(file);
-                            console.log(`Deleted: ${file}`);
+                            logger.warning(`Deleted: ${file}`);
                         } catch (error:any) {
-                            console.warn(`Failed to delete ${file}:`, error.message);
+                            logger.warning(`Failed to delete ${file}:`, error.message);
                         }
                     }
                     
                     // Acknowledge the message only after all processing is complete
                     channel.ack(msg);
-                    console.log(`Successfully processed message for: ${data.path}`);
+                    logger.info(`Successfully processed message for: ${data.path}`);
                 } catch (err) {
-                    console.error("Error processing message:", err);
+                    logger.error("Error processing message:", err);
                     // Reject the message without requeuing
                     channel.nack(msg, false, false);
                 }
@@ -72,13 +73,13 @@ async function consumeMessages() {
         
         // Handle connection closure
         connection.on('close', (err) => {
-            console.error('RabbitMQ connection closed:', err);
+            logger.error('RabbitMQ connection closed:', err);
             // Attempt to reconnect after a delay
             setTimeout(() => consumeMessages(), 5000);
         });
         
     } catch (err) {
-        console.error("Error in RabbitMQ consumer:", err);
+        logger.error("Error in RabbitMQ consumer:", err);
         // Attempt to reconnect after a delay
         setTimeout(() => consumeMessages(), 5000);
     }

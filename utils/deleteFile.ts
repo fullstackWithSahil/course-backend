@@ -1,9 +1,10 @@
 //fileUploder.js
 import axios from "axios";
+import logger from "../monitering/logging";
 
 export default async function deleteFolderInCDN(key:string){
     
-    console.log("deleting:",key);
+    logger.warning("deleting:",key);
   
     let yourStorageZone="buisnesstool-course";
     const response = await axios.get(
@@ -43,10 +44,10 @@ export default async function deleteFolderInCDN(key:string){
   
     if (response.data) {
       Promise.all(promises).then(data=>{
-        console.log(data);
+        logger.warning(data);
       })
     } else {
-      console.log("error deleting:",key)
+      logger.error("error deleting:",key)
     }
   
 };

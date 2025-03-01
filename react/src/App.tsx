@@ -7,7 +7,6 @@ import CPUusage from './components/CPUusage';
 import Memoryusage from './components/Memoryusage';
 import Logs from './components/Logs';
 import { responseTypes } from './types';
-import CurrentLogs from './components/CurrentLogs';
 
 export default function App() {
   const [metricsData, setMetricsData] = useState([]);
@@ -127,7 +126,6 @@ export default function App() {
       
       {/* Server Logs Section */}
       <Logs/>
-      <CurrentLogs/>
     </main>
   );
 }

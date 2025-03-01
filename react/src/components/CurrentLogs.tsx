@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
 // Define proper TypeScript interfaces
 interface Log {

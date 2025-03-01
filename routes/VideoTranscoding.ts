@@ -1,6 +1,7 @@
 import type { Response,Request } from "express";
 import {channel,type MulterFile} from "../index"
 import deleteFolderInCDN from "../utils/deleteFile";
+import logger from "../monitering/logging";
 
 export async function addVideo(req:Request,res:Response){
     try {
@@ -26,8 +27,8 @@ export async function addVideo(req:Request,res:Response){
         }
 
         //adding the video to the queue
-        console.log("enquing to queue.....",videoFile.fieldname);
-        console.log({path:videoFile.filename})
+        logger.info("enquing to queue.....",videoFile.fieldname);
+        logger.info({path:videoFile.filename})
         channel.sendToQueue(
             "videos", 
             Buffer.from(JSON.stringify({
@@ -46,12 +47,12 @@ export async function addVideo(req:Request,res:Response){
                 deleteFolderInCDN(`${req.body.key}/144`),
             ];
             await Promise.all(promises).then(() =>{
-                console.log("videos deleted successfully");
+                logger.info("videos deleted successfully");
             })
         }
         
         res.json({message: 'Video uploaded successfully'});
     } catch (error) {
-        console.log("Error adding video to queue",error);
+        logger.error("Error adding video to queue",error);
     }
 }

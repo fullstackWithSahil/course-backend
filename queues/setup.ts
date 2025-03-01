@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import sendDiscordMessage from '../utils/Discord';
+import logger from '../monitering/logging';
 
 
 export default async function setup() {
@@ -25,5 +26,5 @@ export default async function setup() {
         }
     }));
 
-    console.log('All folders created successfully.');
+    logger.info('All folders created successfully.');
 }

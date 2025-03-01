@@ -14,9 +14,7 @@ db.run(`CREATE TABLE IF NOT EXISTS logs (
 
 export async function getLogs(req: Request, res: Response) {
   try {
-    console.log("start");
-    const data = db.query(`SELECT * FROM logs`).all(); // Changed from .run() to .all()
-    console.log({ data });
+    const data = db.query(`SELECT * FROM logs`).all();
     res.json({ data });
   } catch (error) {
     if (error instanceof Error) {

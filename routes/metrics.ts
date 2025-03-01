@@ -1,5 +1,6 @@
 import type { Response,Request } from "express";
 import {Database} from "bun:sqlite"
+import logger from "../monitering/logging";
 
 const db = new Database("./database.sqlite", { create: true });
 
@@ -45,9 +46,8 @@ export default async function getMetrics(req:Request, res:Response){
   
       const results = query.all();
       res.json(results);
-      console.log(`Fetched ${results.length} records for ${timeRange} range`);
     } catch (error) {
-      console.error("Error fetching metrics:", error);
+      logger.error("Error fetching metrics:", error);
       res.status(500).json({ error: "Failed to fetch metrics data" });
     }
   }

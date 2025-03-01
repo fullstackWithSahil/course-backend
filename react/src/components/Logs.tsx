@@ -17,22 +17,12 @@ export default function Logs() {
     fetchLogs();
   }, []); // Empty dependency array means this runs once on mount
 
-  const fetchLogs = () => {
-    // Mock logs data with different severity levels
-    const mockLogs: Log[] = [
-      { id: 1, timestamp: new Date().toISOString(), message: "Server started successfully", level: "info" },
-      { id: 2, timestamp: new Date(Date.now() - 120000).toISOString(), message: "Database connection established", level: "info" },
-      { id: 3, timestamp: new Date(Date.now() - 180000).toISOString(), message: "High CPU usage detected (82%)", level: "warning" },
-      { id: 4, timestamp: new Date(Date.now() - 240000).toISOString(), message: "Failed to connect to cache server", level: "error" },
-      { id: 5, timestamp: new Date(Date.now() - 300000).toISOString(), message: "User authentication successful", level: "info" },
-      { id: 6, timestamp: new Date(Date.now() - 360000).toISOString(), message: "Low memory warning (85% used)", level: "warning" },
-      { id: 7, timestamp: new Date(Date.now() - 420000).toISOString(), message: "File system check completed", level: "info" },
-      { id: 8, timestamp: new Date(Date.now() - 480000).toISOString(), message: "API rate limit approaching", level: "warning" },
-      { id: 9, timestamp: new Date(Date.now() - 540000).toISOString(), message: "Database query timeout", level: "error" },
-      { id: 10, timestamp: new Date(Date.now() - 600000).toISOString(), message: "Scheduled backup completed", level: "info" },
-    ];
-    
-    setLogs(mockLogs);
+  const fetchLogs = async() => {
+    const response = await fetch(`http://localhost:8080/api/metrics/logs`);
+    response.json().then((data) => {
+      console.log(data)
+      setLogs(data.data);
+    });
   };
 
   // Helper function to get log icon based on level

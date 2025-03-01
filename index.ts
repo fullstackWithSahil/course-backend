@@ -10,7 +10,7 @@ import { addVideo } from "./routes/VideoTranscoding";
 import logSystemStats from "./monitering/monitering";
 import getMetrics from "./routes/metrics";
 import { getLogs } from "./routes/getlogs";
-
+import logger from "./monitering/logging";
 
 export interface MulterFile {
   fieldname: string;
@@ -89,7 +89,7 @@ app.get("/api/metrics/logs",getLogs);
 
 const port = process.env.PORT || 8080;
 app.listen(port, async () => {
-  console.log("listening on port", port);
-  // channel = await connectRabbitMQ();
+  logger.info("listening on port", port);
+  channel = await connectRabbitMQ();
   setInterval(logSystemStats, 5000);
 });

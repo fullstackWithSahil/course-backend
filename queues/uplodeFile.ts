@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import fileUploder from "../utils/fileUploder";
+import logger from "../monitering/logging";
 
 
 export default async function uploadFiles(key:string) {
@@ -29,23 +30,21 @@ export default async function uploadFiles(key:string) {
             //uploding the current batch of files
             const uploadPromises = currentBatch.map(async (file) => {
                 try {
-                    console.log("Uploading file", file);
+                    logger.warning("Uploading file", file);
                     const genkey = generateKey(key, file);
                     const url = await fileUploder(file,genkey);
                     fs.unlinkSync(file);
-                    console.log(url);
                     //removing the files that were uploded successfully from the array of files
                     filesToUpload = filesToUpload.filter((f) => f !== file);
                 } catch (error) {
-                    console.log("error uploding file" + file);
+                    logger.error("error uploding file" + file);
                 }
             });
     
             const uploadedUrls = await Promise.all(uploadPromises);
-            console.log(uploadedUrls);
         }
     } catch (error) {
-        console.log("Error in uploading files", error);
+        logger.error("Error in uploading files", error);
     }
 }
 
@@ -65,7 +64,5 @@ function generateKey(tempKey: string, file: string) {
     } else {
         returnKey = returnKey + "/144/" + fileName;
     }
-    console.log("return key"+returnKey)
-
     return returnKey;
 }

@@ -25,28 +25,33 @@ class Logger {
         }
     }
 
-    info(message: string) {
-        this.log(message, 'info');
+    info(...message: any[]) {
+        this.log('info', message);
     }
 
-    warning(message: string) {
-        this.log(message, 'warning');
+    warning(...message: any[]) {
+        this.log('warning', message);
     }
 
-    error(message: string) {
-        this.log(message, 'error');
+    error(...message: any[]) {
+        this.log('error', message);
     }
 
-    private log(message: string, level: LogLevel) {
+    private log(level: LogLevel, message: any[]) {
         try {
-            if (process.env.ENV === "developmdddent") {
-                console.log(`[${level.toUpperCase()}]`, message);
+            if (process.env.ENV === "development") {
+                console.log(`[${level.toUpperCase()}]`, ...message);
             } else {
+                // Convert message to string, handling objects and arrays
+                const messageStr = message.map(item => 
+                    typeof item === 'object' ? JSON.stringify(item) : String(item)
+                ).join(' ');
+                
                 const query = this.db.prepare(`
                     INSERT INTO logs (message, level)
                     VALUES (?, ?)
                 `);
-                query.run(message, level);
+                query.run(messageStr, level);
             }
         } catch (error) {
             console.error(`Error logging ${level} message:`, error);

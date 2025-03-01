@@ -1,5 +1,6 @@
 import { exec } from "child_process";
 import util from "util";
+import logger from "../monitering/logging";
 
 const execPromise = util.promisify(exec)
 
@@ -15,7 +16,7 @@ export default async function Transcode(resolution: "1080" | "720" | "360" | "14
         );
 
     } catch (error) {
-        console.log("there was an error transcoding the video", error);
+        logger.error("there was an error transcoding the video", error);
     }
 };
 
