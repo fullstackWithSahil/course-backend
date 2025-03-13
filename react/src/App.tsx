@@ -18,7 +18,7 @@ export default function App() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8080/api/metrics/data?range=${timeRange}`);
+      const response = await fetch(`/api/metrics/data?range=${timeRange}`);
       if (!response.ok) {
         throw new Error('Failed to fetch data');
       }

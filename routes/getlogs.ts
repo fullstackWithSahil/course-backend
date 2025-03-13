@@ -15,7 +15,7 @@ db.run(`CREATE TABLE IF NOT EXISTS logs (
 export async function getLogs(req: Request, res: Response) {
   try {
     const data = db.query(`SELECT * FROM logs`).all();
-    res.json({ data });
+    res.json({ data:data.reverse() });
   } catch (error) {
     if (error instanceof Error) {
       logger.error(error.message);
