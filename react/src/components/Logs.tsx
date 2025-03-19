@@ -18,7 +18,7 @@ export default function Logs() {
   }, []); // Empty dependency array means this runs once on mount
 
   const fetchLogs = async() => {
-    const response = await fetch(`http://localhost:8080/api/metrics/logs`);
+    const response = await fetch(`/api/metrics/logs`);
     response.json().then((data) => {
       console.log(data)
       setLogs(data.data);
