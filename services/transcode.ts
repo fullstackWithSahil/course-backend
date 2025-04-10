@@ -1,6 +1,6 @@
 import { exec } from "child_process";
 import util from "util";
-import logger from "../monitering/logging";
+import logger from "../utils/logging";
 
 const execPromise = util.promisify(exec)
 
@@ -8,7 +8,7 @@ export default async function Transcode(resolution: "1080" | "720" | "360" | "14
     const scale = getRatio(resolution);
     try {
         // Step 1: Transcode video
-        await execPromise(`ffmpeg -i uploads/videos/${input} -c:v libx264 -c:a aac -vf scale=${scale} -f mp4 output/i${resolution}.mp4`);
+        await execPromise(`ffmpeg -i ${input} -c:v libx264 -c:a aac -vf scale=${scale} -f mp4 output/i${resolution}.mp4`);
 
         // Step 2: Generate HLS files
         await execPromise(

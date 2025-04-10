@@ -4,14 +4,13 @@ import fs from "fs";
 
 export default async function fileUploder(filePath:string,key:string){
   const fileStream = fs.createReadStream(filePath);
-  const uniqueFilename = key;
 
   let yourStorageZone="buisnesstool-course";
   const response = await axios.put(
     //url
     //stream
     //headers
-    `https://syd.storage.bunnycdn.com/${yourStorageZone}/${uniqueFilename}`,
+    `https://syd.storage.bunnycdn.com/${yourStorageZone}/${key}`,
     fileStream,
     {
       headers: {
@@ -21,7 +20,7 @@ export default async function fileUploder(filePath:string,key:string){
   );
 
   if (response.data) {
-    return `https://buisnesstools-course.b-cdn.net/${uniqueFilename}`;
+    return `https://buisnesstools-course.b-cdn.net/${key}`;
   } else {
     return false;
   }

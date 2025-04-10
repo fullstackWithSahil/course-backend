@@ -1,95 +1,77 @@
-import express from "express";
-import multer from "multer";
-import type { FileFilterCallback } from "multer";
-import fs from "fs";
+import express, { type Request, type Response } from "express";
 import cors from "cors";
+import multer from "multer";
+import amqp from "amqplib";
 import path from "path";
-import connectRabbitMQ from "./queues/connectQueue";
-import type { Channel } from "amqplib";
-import { addVideo } from "./routes/VideoTranscoding";
-import logSystemStats from "./monitering/monitering";
-import getMetrics from "./routes/metrics";
-import { getLogs } from "./routes/getlogs";
-import logger from "./monitering/logging";
-
-export interface MulterFile {
-  fieldname: string;
-  originalname: string;
-  encoding: string;
-  mimetype: string;
-  size: number;
-  destination: string;
-  filename: string;
-  path: string;
-  buffer: Buffer;
-}
-
-// Define multer storage configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    if (req.path === "/api/addThumbnail") {
-      const uploadPath = "thumbnails";
-      fs.mkdirSync(uploadPath, { recursive: true }); // Ensure the directory exists
-      cb(null, uploadPath);
-    } else {
-      const uploadPath =
-        file.fieldname === "video"
-          ? "queues/uploads/videos"
-          : "queues/uploads/thumbnails";
-      fs.mkdirSync(uploadPath, { recursive: true }); // Ensure the directory exists
-      cb(null, uploadPath);
-    }
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    const ext = path.extname(file.originalname);
-    cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-  },
-});
-
-// Multer instance
-const upload = multer({
-  storage,
-  fileFilter: (req, file, cb: FileFilterCallback) => {
-    if (file.fieldname === "video" && !file.mimetype.startsWith("video/")) {
-      return cb(new Error("Invalid video file type"));
-    }
-    if (file.fieldname === "thumbnail" && !file.mimetype.startsWith("image/")) {
-      return cb(new Error("Invalid thumbnail file type"));
-    }
-    cb(null, true);
-  },
-});
+import fs from "fs";
+import logger from "./utils/logging";
 
 const app = express();
 app.use(express.json());
-app.use(express.static("public"));
-
 app.use(cors());
 
-export let channel: Channel | undefined;
+// Ensure /queue/input exists
+const inputFolder = path.join(__dirname, "input");
+fs.mkdirSync(inputFolder, { recursive: true });
 
-// Define route for uploading video and thumbnail
-app.post(
-  "/api/video/transcode",
-  upload.fields([
-    { name: "video", maxCount: 1 },
-    { name: "thumbnail", maxCount: 1 },
-  ]),
-  addVideo
-);
-
-app.get("/api/test", async (req, res) => {
-  res.send("<h1>Running...</h1>");
+// Setup Multer to store uploaded videos in /queue/input
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, inputFolder);
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + "-" +"video.mp4";
+    cb(null, uniqueName);
+  },
 });
 
-app.get("/api/metrics/data",getMetrics);
+const upload = multer({ storage });
 
-app.get("/api/metrics/logs",getLogs);
+// RabbitMQ connection
+let channel: amqp.Channel;
+export const queueName = "Videos";
 
-const port = process.env.PORT || 8080;
-app.listen(port, async () => {
-  logger.info("listening on port", port);
-  channel = await connectRabbitMQ();
-  setInterval(logSystemStats, 5000);
+async function connectRabbitMQ() {
+  const connection = await amqp.connect("amqp://localhost"); // or your RabbitMQ URL
+  channel = await connection.createChannel();
+  await channel.assertQueue(queueName, { durable: true });
+  logger.info("Connected to RabbitMQ");
+}
+
+connectRabbitMQ().catch((err) => logger.error("RabbitMQ connection error", err));
+
+// Route to upload and queue video
+app.post("/api/transcode", upload.single("video"), (req: Request, res: Response): void => {
+  (async () => {
+    try {
+      const { key } = req.body;
+      const file = req.file;
+
+      if (!file) {
+        res.status(400).json({ error: "Video file is required." });
+        return;
+      }
+
+      const filePath = path.join("input", file.filename);
+
+      const payload = {
+        videoPath: filePath,
+        key,
+      };
+
+      channel.sendToQueue(queueName, Buffer.from(JSON.stringify(payload)), {
+        persistent: true,
+      });
+
+      logger.info(`Queued video for transcoding: ${filePath}`);
+      res.status(200).json({ message: "Video queued for transcoding." });
+    } catch (error) {
+      logger.error("Error adding transcoding the video", error);
+      res.status(500).json({ error: "Error adding transcoding the video" });
+    }
+  })();
+});
+
+app.listen(process.env.PORT || 8080, () => {
+  console.log(`Server is running on port ${process.env.PORT || 8080}`);
 });
