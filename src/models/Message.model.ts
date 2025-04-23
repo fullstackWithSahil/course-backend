@@ -1,0 +1,17 @@
+import mongoose from "mongoose";
+import { v4 as uuidv4 } from 'uuid';
+
+const MessageSchema = new mongoose.Schema({
+    message:String,
+    sender:String,
+    to:String,
+    group:{type:Boolean,default:false},
+    course:Number,
+    profile:String,
+    firstname:String,
+    id:{type:String,default:()=>uuidv4()}
+},{timestamps: true});
+
+const Messages = mongoose.models.messages|| mongoose.model("messages", MessageSchema);
+
+export default Messages;

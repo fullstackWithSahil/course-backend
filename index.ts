@@ -4,11 +4,18 @@ import multer from "multer";
 import amqp from "amqplib";
 import path from "path";
 import fs from "fs";
-import logger from "./utils/logging";
-
+const http = require('http');
 const app = express();
+const server = http.createServer(app);
+import { Server,Socket } from "socket.io";
+const io = new Server(server);
+import logger from "./utils/logging";
+import MessagesRouter from "./src/routes/messages.routes";
+import mongoose from "mongoose";
+
 app.use(express.json());
 app.use(cors());
+app.use("/api/messages",MessagesRouter);
 
 // Ensure /queue/input exists
 const inputFolder = path.join(__dirname, "input");
@@ -72,6 +79,12 @@ app.post("/api/transcode", upload.single("video"), (req: Request, res: Response)
   })();
 });
 
-app.listen(process.env.PORT || 8080, () => {
-  console.log(`Server is running on port ${process.env.PORT || 8080}`);
+io.on('connection', (socket:Socket): void => {
+  console.log('a user connected');
+});
+
+
+server.listen(8080, () => {
+  console.log('listening on *:3000');
+  mongoose.connect("mongodb://127.0.0.1:27017/buisnesstool")
 });
