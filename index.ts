@@ -8,10 +8,15 @@ const http = require('http');
 const app = express();
 const server = http.createServer(app);
 import { Server,Socket } from "socket.io";
-const io = new Server(server);
 import logger from "./utils/logging";
-import MessagesRouter from "./src/routes/messages.routes";
+import MessagesRouter from "./src/routes/Messages.routes";
 import mongoose from "mongoose";
+
+const io = new Server(server,{
+  cors:{
+    origin:"http://localhost:3000"
+  }
+});
 
 app.use(express.json());
 app.use(cors());
@@ -81,6 +86,22 @@ app.post("/api/transcode", upload.single("video"), (req: Request, res: Response)
 
 io.on('connection', (socket:Socket): void => {
   console.log('a user connected');
+  
+  socket.on('joinRoom', (room) => {
+    socket.join(room);
+  });
+
+  socket.on("sendMessage",(message)=>{
+    io.to(message.room).emit("receiveMessage",message);
+  });
+
+  socket.on("editMessage",(message)=>{
+    io.to(message.room).emit("receiveEditMessage",message);
+  });
+
+  socket.on("deleteMessage",(message)=>{
+    io.to(message.room).emit("receiveDeleteMessage",message);
+  });
 });
 
 

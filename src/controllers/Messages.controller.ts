@@ -1,12 +1,11 @@
 import type { Request, Response } from "express";
 import Messages from "../models/Message.model";
-import { v4 as uuidv4 } from 'uuid';
 
 
 export async function getMessages(req: Request, res: Response) {
     try {
         const {course}= req.query;
-        const data = await Messages.find({course}).sort({ createdAt: -1 }).limit(150).exec();
+        const data = await Messages.find({ course }).sort({ createdAt:1 }).limit(150).exec();
         res.status(200).json(data);
     } catch (error) {
         console.log("Error fetching messages", error);
@@ -16,8 +15,7 @@ export async function getMessages(req: Request, res: Response) {
 
 export async function postMessages(req: Request, res: Response) {
     try {
-        const id = uuidv4();
-        const { message, sender, to, group, course, profile, firstname } = req.body;
+        const { message, sender, to, group, course, profile, firstname,id } = req.body;
         const newMessage = new Messages({ id,message, sender, to, group, course, profile, firstname });
         await newMessage.save();
         res.status(200).json(newMessage);
