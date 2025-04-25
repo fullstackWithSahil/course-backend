@@ -100,7 +100,7 @@ io.on('connection', (socket:Socket): void => {
   });
 
   socket.on("deleteMessage",(message)=>{
-    io.to(message.room).emit("receiveDeleteMessage",message);
+    io.to(message.room).emit("receiveDeleteMessage",message.id);
   });
 });
 
