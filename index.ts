@@ -50,7 +50,6 @@ async function connectRabbitMQ() {
   logger.info("Connected to RabbitMQ");
 }
 
-connectRabbitMQ().catch((err) => logger.error("RabbitMQ connection error", err));
 
 // Route to upload and queue video
 app.post("/api/transcode", upload.single("video"), (req: Request, res: Response): void => {
@@ -105,7 +104,12 @@ io.on('connection', (socket:Socket): void => {
 });
 
 
-server.listen(8080, () => {
-  console.log('listening on *:3000');
-  mongoose.connect("mongodb://127.0.0.1:27017/buisnesstool")
+server.listen(8080, async() => {
+  try {
+    console.log('listening on *:3000');
+    await mongoose.connect("mongodb://127.0.0.1:27017/buisnesstool");
+    await connectRabbitMQ()
+  } catch (error) {
+    logger.error("Error starting server", error);
+  }
 });
