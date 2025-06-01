@@ -11,6 +11,7 @@ import { Server,Socket } from "socket.io";
 import logger from "./utils/logging";
 import MessagesRouter from "./src/routes/Messages.routes";
 import mongoose from "mongoose";
+import VideoRouter from "./src/routes/VIdeo.router";
 
 const io = new Server(server,{
   cors:{
@@ -21,6 +22,7 @@ const io = new Server(server,{
 app.use(express.json());
 app.use(cors());
 app.use("/api/messages",MessagesRouter);
+app.use("/api/videos",VideoRouter)
 
 // Ensure /queue/input exists
 const inputFolder = path.join(__dirname, "input");
