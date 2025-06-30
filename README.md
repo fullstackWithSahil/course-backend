@@ -1,4 +1,4 @@
-# new-backend
+# course-backend
 
 To install dependencies:
 
