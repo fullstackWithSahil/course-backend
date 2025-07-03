@@ -8,6 +8,7 @@ interface IMessage extends Document{
     type:"text"|"image"|"video"|"file";
     replyTo?: string;
     deleted?: boolean;
+    profile:string;
 }
 
 const MessageSchema = new mongoose.Schema({
@@ -37,7 +38,11 @@ const MessageSchema = new mongoose.Schema({
     deleted: {
         type: Boolean,
         default: false,
-    }
+    },
+    profile:{
+        type:String,
+    },
+    firstname:String,
 }, {
   timestamps: true,
 });
@@ -45,7 +50,14 @@ const MessageSchema = new mongoose.Schema({
 const Message = mongoose.model<IMessage>("messages", MessageSchema);
 
 const MessageModel = {
-    addMessage: async (chat: string, content: string, sender: string, replyTo?: string) => {
+    addMessage: async (
+        chat: string, 
+        content: string, 
+        sender: string,
+        profile:string, 
+        firstname:string,
+        replyTo?: string,
+    ) => {
         try {
             if (!content.trim()) {
                 throw new Error("Message content cannot be empty");
@@ -57,6 +69,8 @@ const MessageModel = {
                 content: content.trim(),
                 type: "text",
                 replyTo: replyTo || null,
+                profile,
+                firstname,
             });
             
             await message.save();
@@ -129,7 +143,7 @@ const MessageModel = {
             })
             .populate('replyTo')
             .sort({ createdAt: -1 }) // Most recent first
-            .skip(offset)
+            .skip(offset*limit)
             .limit(limit);
             
             return messages.reverse(); // Return in chronological order
@@ -139,54 +153,15 @@ const MessageModel = {
         }
     },
 
-    addImageMessage: async (chat: string, content: string, sender: string, replyTo?: string) => {
-        try {
-            if (!content.trim()) {
-                throw new Error("Image URL cannot be empty");
-            }
-            
-            const message = new Message({
-                chat,
-                sender,
-                content: content.trim(),
-                type: "image",
-                replyTo: replyTo || null,
-            });
-            
-            await message.save();
-            await message.populate('replyTo');
-            return message;
-        } catch (error) {
-            console.error("Error adding image message:", error);
-            throw error;
-        }
-    },
-
-    addVideoMessage: async (chat: string, content: string, sender: string, replyTo?: string) => {
-        try {
-            if (!content.trim()) {
-                throw new Error("Video URL cannot be empty");
-            }
-            
-            const message = new Message({
-                chat,
-                sender,
-                content: content.trim(),
-                type: "video",
-                replyTo: replyTo || null,
-            });
-            
-            await message.save();
-            await message.populate('replyTo');
-            return message;
-        } catch (error) {
-            console.error("Error adding video message:", error);
-            throw error;
-        }
-    },
-
     // Additional useful methods
-    addFileMessage: async (chat: string, content: string, sender: string, replyTo?: string) => {
+    addFileMessage: async (
+        chat: string, 
+        content: string, 
+        sender: string,
+        profile:string,
+        type:"image"|"video"|"file",
+        replyTo?: string
+    ) => {
         try {
             if (!content.trim()) {
                 throw new Error("File URL cannot be empty");
@@ -196,8 +171,9 @@ const MessageModel = {
                 chat,
                 sender,
                 content: content.trim(),
-                type: "file",
+                type,
                 replyTo: replyTo || null,
+                profile,
             });
             
             await message.save();
@@ -208,24 +184,6 @@ const MessageModel = {
             throw error;
         }
     },
-
-    getMessageById: async (messageId: string) => {
-        try {
-            const message = await Message.findById(messageId)
-                .populate('replyTo')
-                .populate('chat');
-            
-            if (!message) {
-                throw new Error("Message not found");
-            }
-            
-            return message;
-        } catch (error) {
-            console.error("Error fetching message by ID:", error);
-            throw error;
-        }
-    },
-
     getMessagesBySender: async (sender: string, limit: number = 50, offset: number = 0) => {
         try {
             const messages = await Message.find({

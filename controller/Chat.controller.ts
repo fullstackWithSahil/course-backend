@@ -3,7 +3,7 @@ import ChatModel from "../model/Chat.model" // Adjust path as needed
 
 export async function createChat(req: Request, res: Response) {
     try {
-        const { teacher,name } = req.body;
+        const { teacher,name,student } = req.body;
         
         // Validation
         if (!teacher) {
@@ -21,8 +21,18 @@ export async function createChat(req: Request, res: Response) {
             });
             return; 
         }
+
+        //check if the chat already exists
+        const chatExists = await ChatModel.checkChatExists(teacher.trim(), name.trim());
+        if (chatExists) {
+            res.status(409).json({
+                success: false,
+                message: "Chat with this name already exists for this teacher"
+            });
+            return; 
+        }
         
-        const chat = await ChatModel.createChat(teacher.trim(),name,true);
+        const chat = await ChatModel.createChat(teacher.trim(),name,student,true);
         
         res.status(201).json({
             success: true,

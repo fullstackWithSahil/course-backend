@@ -36,18 +36,30 @@ const ChatSchema = new mongoose.Schema({
 const Chat = mongoose.model<IChat>("chats", ChatSchema);
 
 const ChatModel = {
-    createChat: async (teacher: string,name:string,group?:boolean)=>{
+    createChat: async (teacher: string,name:string,student:string,group?:boolean)=>{
         try {
             const chat = new Chat({
                 teacher,
                 name,
-                members: [teacher],
+                members: [teacher,student],
                 group: group || true,
             });
             await chat.save();
             return chat;
         } catch (error) {
             console.error("Error creating chat:", error);
+            throw error;
+        }
+    },
+    checkChatExists: async (teacher: string, name: string) => {
+        try {
+            const chat = await Chat.findOne({ teacher, name, deleted: false });
+            if (chat) {
+                return true; // Chat exists
+            }
+            return false; // Chat does not exist
+        } catch (error) {
+            console.error("Error checking chat existence:", error);
             throw error;
         }
     },

@@ -20,8 +20,10 @@ export async function getMessagesByChatId(req: Request, res: Response) {
 
 export async function createMessage(req: Request, res: Response) {
 	try {
-		const { chat, sender, content, replyTo } = req.body;
-		const message = await MessageModel.addMessage(chat, content, sender, replyTo);
+		const { chat, sender, content, replyTo,profile,firstname } = req.body;
+		const message = await MessageModel.addMessage(
+			chat, content, sender,profile,firstname, replyTo
+		);
 		res.status(201).json(message);
 	} catch (err) {
 		res.status(400).json({ error: "Failed to create message", details: err });
@@ -51,49 +53,14 @@ export async function deleteMessage(req: Request, res: Response) {
 	}
 }
 
-// 👇 Shared utility to create signed URL
-// async function generatePresignedUrl(fileName: string, contentType: string) {
-// 	const key = `uploads/${Date.now()}-${fileName}`;
-// 	const command = new PutObjectCommand({
-// 		Bucket: r2BucketName,
-// 		Key: key,
-// 		ContentType: contentType,
-// 	});
-
-// 	const uploadUrl = await getSignedUrl(r2Client, command, { expiresIn: 60 * 5 });
-
-// 	return { uploadUrl, key };
-// }
-
-// // 👇 Image Upload Handler
-// export async function uplodeImage(req: Request, res: Response) {
-// 	try {
-// 		const { fileName, contentType } = req.body;
-// 		const { uploadUrl, key } = await generatePresignedUrl(fileName, contentType);
-// 		res.json({ uploadUrl, key });
-// 	} catch (err) {
-// 		res.status(500).json({ error: "Failed to get upload URL for image", details: err });
-// 	}
-// }
-
-// // 👇 Video Upload Handler
-// export async function uplodeVideo(req: Request, res: Response) {
-// 	try {
-// 		const { fileName, contentType } = req.body;
-// 		const { uploadUrl, key } = await generatePresignedUrl(fileName, contentType);
-// 		res.json({ uploadUrl, key });
-// 	} catch (err) {
-// 		res.status(500).json({ error: "Failed to get upload URL for video", details: err });
-// 	}
-// }
-
-// // 👇 File Upload Handler
-// export async function uplodeFile(req: Request, res: Response) {
-// 	try {
-// 		const { fileName, contentType } = req.body;
-// 		const { uploadUrl, key } = await generatePresignedUrl(fileName, contentType);
-// 		res.json({ uploadUrl, key });
-// 	} catch (err) {
-// 		res.status(500).json({ error: "Failed to get upload URL for file", details: err });
-// 	}
-// }
+export async function uplodeFile(req:Request,res:Response){
+	try {
+		const {chat,sender,content,replyTo,type,profile} = req.body;
+		console.log(req.body);
+		const image = await MessageModel.addFileMessage(chat,content,sender,profile,type,replyTo);
+		res.json(image)
+	} catch (error) {
+		res.status(400).json({error:"Error uploding the file"})
+		console.log("error uploding the file")
+	}
+}

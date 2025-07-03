@@ -1,12 +1,11 @@
+//messages.routes.ts
 import { Router } from "express";
 import {
 	getMessagesByChatId,
 	createMessage,
 	editMessage,
 	deleteMessage,
-	// uplodeImage,
-	// uplodeVideo,
-	// uplodeFile
+	uplodeFile
 } from "../controller/Message.controller";
 
 const router = Router();
@@ -23,13 +22,7 @@ router.put("/:messageId", editMessage);
 // Soft delete a message
 router.delete("/:messageId", deleteMessage);
 
-// // Get presigned URL for image upload
-// router.post("/upload/image", uplodeImage);
-
-// // Get presigned URL for video upload
-// router.post("/upload/video", uplodeVideo);
-
-// // Get presigned URL for file upload
-// router.post("/upload/file", uplodeFile);
+//save message that contain image.video or file
+router.post("/upload/file", uplodeFile);
 
 export default router;
