@@ -34,6 +34,7 @@ export async function editMessage(req: Request, res: Response) {
 	try {
 		const { messageId } = req.params;
 		const { content } = req.body;
+		console.log({messageId,content})
 
 		const updated = await MessageModel.editMessage(messageId||"", content);
 		res.json(updated);

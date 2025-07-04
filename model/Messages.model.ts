@@ -99,9 +99,8 @@ const MessageModel = {
             
             const updatedMessage = await Message.findByIdAndUpdate(
                 messageId,
-                { content: content.trim() },
-                { new: true }
-            ).populate('replyTo');
+                { content: content.trim() }
+            )
             
             return updatedMessage;
         } catch (error) {
@@ -124,8 +123,7 @@ const MessageModel = {
             // Soft delete - mark as deleted instead of removing from database
             const deletedMessage = await Message.findByIdAndUpdate(
                 messageId,
-                { deleted: true, content: "This message was deleted" },
-                { new: true }
+                { deleted: true },
             );
             
             return deletedMessage;
