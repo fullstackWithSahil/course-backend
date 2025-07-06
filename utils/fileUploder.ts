@@ -14,7 +14,7 @@ export default async function fileUploder(filePath:string,key:string){
     fileStream,
     {
       headers: {
-        AccessKey: "8cb972e1-29b1-4405-9235d083f503-00b0-4b0b",
+        AccessKey: "4bf30c6a-4924-41f6-bb822899ea28-858d-465e",
       },
     }
   );

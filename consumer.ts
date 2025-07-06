@@ -1,24 +1,24 @@
 import amqp from "amqplib";
-import { queueName } from "./index";
-import Transcode from "./services/transcode";
-import logger from "./utils/logging";
 import fs from "fs";
 import path from "path";
+import Transcode from "./consumer/transcode";
 import fileUploder from "./utils/fileUploder";
+import createFolders from "./utils/createFolders";
 
 async function startConsumer() {
 	try {
+        await createFolders();
 		const connection = await amqp.connect("amqp://localhost"); // or your actual URL
 		const channel = await connection.createChannel();
 
-		await channel.assertQueue(queueName, { durable: true });
+		await channel.assertQueue("videos", { durable: true });
 
 		// Prefetch 1 so it only processes one message at a time
 		channel.prefetch(1);
 
 		console.log("Waiting for messages in queue...");
 
-		channel.consume(queueName, async (msg) => {
+		channel.consume("videos", async (msg) => {
 			if (msg !== null) {
 				try {
 					const payload = JSON.parse(msg.content.toString());
@@ -68,7 +68,7 @@ async function startConsumer() {
 										(f) => f.key !== file.key
 									);
 								} catch (error) {
-									logger.error("error uploding file" + file);
+									console.log("error uploding file" + file);
 								}
 							}
 						);
@@ -85,15 +85,14 @@ async function startConsumer() {
 						for (const file of filesToDelete) {
 							try {
 								await fs.promises.unlink(file);
-								logger.warning(`Deleted: ${file}`);
+								console.log(`Deleted: ${file}`);
 							} catch (error: any) {
-								logger.warning(
+								console.log(
 									`Failed to delete ${file}:`,
 									error.message
 								);
 							}
 						}
-
 						await Promise.all(uploadPromises);
 					}
 
@@ -101,8 +100,6 @@ async function startConsumer() {
 					channel.ack(msg);
 				} catch (error) {
 					console.log("Error processing message:", error);
-
-					// Optionally reject and requeue the message
 					channel.nack(msg, false, false); // false = don't requeue
 				}
 			}
