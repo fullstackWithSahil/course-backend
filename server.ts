@@ -12,6 +12,7 @@ import fs from "fs";
 const server = http.createServer(app);
 import cors from "cors";
 import { Server, Socket } from "socket.io";
+import VideoRouter from "./routes/Video.router";
 
 const io = new Server(server, {
 	cors: {
@@ -42,6 +43,7 @@ app.use(cors());
 
 app.use("/api/chats", chatRouter);
 app.use("/api/messages", messageRouter);
+app.use("/api/videos",VideoRouter);
 
 app.post("/api/transcode", upload.single("video"), (req: Request, res: Response) => {
     try {
