@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import MessageModel from "../model/Messages.model";
+import ChatModel from "../model/Chat.model";
 
 
 export async function getMessagesByChatId(req: Request, res: Response) {
@@ -21,6 +22,11 @@ export async function getMessagesByChatId(req: Request, res: Response) {
 export async function createMessage(req: Request, res: Response) {
 	try {
 		const { chat, sender, content, replyTo,profile,firstname } = req.body;
+		const checkBan = await ChatModel.getChatById(chat);
+		if (checkBan.bannedMembers.includes(sender)) {
+			res.status(200).json({ error: "You are banned from this chat" });
+			return; 
+		}
 		const message = await MessageModel.addMessage(
 			chat, content, sender,profile,firstname, replyTo
 		);
@@ -34,7 +40,6 @@ export async function editMessage(req: Request, res: Response) {
 	try {
 		const { messageId } = req.params;
 		const { content } = req.body;
-		console.log({messageId,content})
 
 		const updated = await MessageModel.editMessage(messageId||"", content);
 		res.json(updated);
