@@ -13,7 +13,7 @@ const server = http.createServer(app);
 import cors from "cors";
 import { Server, Socket } from "socket.io";
 import VideoRouter from "./routes/Video.router";
-import { generateCertificate } from "./controller/Certificate.controller";
+import { waitForFileReady } from "./utils/filechecker";
 
 const io = new Server(server, {
 	cors: {
@@ -46,12 +46,9 @@ app.use("/api/chats", chatRouter);
 app.use("/api/messages", messageRouter);
 app.use("/api/videos",VideoRouter);
 
-app.post("/api/certificate",generateCertificate);
-
-app.post("/api/transcode", upload.single("video"), (req: Request, res: Response) => {
+app.post("/api/transcode", upload.single("video"), async (req: Request, res: Response) => {
     try {
       const { key } = req.body;
-      console.log({key})
       const file = req.file;
 
       if (!file) {
@@ -59,22 +56,46 @@ app.post("/api/transcode", upload.single("video"), (req: Request, res: Response)
         return;
       }
 
-      const filePath = path.join("input", file.filename);
+      if (!channel) {
+        res.status(500).json({ error: "RabbitMQ channel not available." });
+        return;
+      }
+
+      const fullFilePath = path.join(inputFolder, file.filename);
+      const relativeFilePath = path.join("input", file.filename);
+
+      // Wait for file to be fully written to disk
+      const fileReady = await waitForFileReady(fullFilePath);
+      
+      if (!fileReady) {
+        // Clean up the potentially incomplete file
+        try {
+          fs.unlinkSync(fullFilePath);
+        } catch (cleanupError) {
+          console.error("Error cleaning up incomplete file:", cleanupError);
+        }
+        res.status(500).json({ error: "File upload incomplete or corrupted." });
+        return;
+      }
 
       const payload = {
-        videoPath: filePath,
+        videoPath: relativeFilePath,
         key,
       };
 
+      // Now safely enqueue the task since we've verified the file exists
       channel.sendToQueue("videos", Buffer.from(JSON.stringify(payload)), {
         persistent: true,
       });
 
-      console.log(`Queued video for transcoding: ${filePath}`);
-      res.status(200).json({ message: "Video queued for transcoding." });
+      console.log(`Queued video for transcoding: ${relativeFilePath}`);
+      res.status(200).json({ 
+        message: "Video queued for transcoding.",
+        filename: file.filename
+      });
     } catch (error) {
-      console.log("Error adding transcoding the video", error);
-      res.status(500).json({ error: "Error adding transcoding the video" });
+      console.log("Error transcoding the video:", error);
+      res.status(500).json({ error: "Error processing video for transcoding." });
     }
 });
 

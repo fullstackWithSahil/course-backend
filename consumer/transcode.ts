@@ -7,11 +7,14 @@ export default async function Transcode(resolution: "1080" | "720" | "360" | "14
     const scale = getRatio(resolution);
     try {
         // Step 1: Transcode video
-        await execPromise(`ffmpeg -i ${input} -c:v libx264 -c:a aac -vf scale=${scale} -f mp4 output/i${resolution}.mp4`);
-
-        // Step 2: Generate HLS files
         await execPromise(
-            `ffmpeg -i output/i${resolution}.mp4 -c:v libx264 -c:a aac -hls_time 10 -hls_list_size 0 -hls_segment_filename "output/${resolution}/segment_%03d.ts" -f hls output/${resolution}/index.m3u8`
+            `ffmpeg -i ${input} ` +
+            `-c:v libx264 -preset medium -crf 23 ` +
+            `-c:a aac -b:a 128k ` +
+            `-vf scale=${scale} ` +
+            `-hls_time 10 -hls_list_size 0 ` +
+            `-hls_segment_filename "output/${resolution}/segment_%03d.ts" ` +
+            `-f hls output/${resolution}/index.m3u8`
         );
 
     } catch (error) {
