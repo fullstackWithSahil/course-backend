@@ -43,6 +43,7 @@ const MessageSchema = new mongoose.Schema({
         type:String,
     },
     firstname:String,
+    id:String,
 }, {
   timestamps: true,
 });
@@ -51,6 +52,7 @@ const Message = mongoose.model<IMessage>("messages", MessageSchema);
 
 const MessageModel = {
     addMessage: async (
+        id:string,
         chat: string, 
         content: string, 
         sender: string,
@@ -71,6 +73,7 @@ const MessageModel = {
                 replyTo: replyTo || null,
                 profile,
                 firstname,
+                id
             });
             
             await message.save();
@@ -88,7 +91,7 @@ const MessageModel = {
                 throw new Error("Message content cannot be empty");
             }
             
-            const message = await Message.findById(messageId);
+            const message = await Message.findOne({id:messageId});
             if (!message) {
                 throw new Error("Message not found");
             }
@@ -97,9 +100,9 @@ const MessageModel = {
                 throw new Error("Cannot edit deleted message");
             }
             
-            const updatedMessage = await Message.findByIdAndUpdate(
-                messageId,
-                { content: content.trim() }
+            const updatedMessage = await Message.findOneAndUpdate(
+                {id:messageId},
+                {content:content.trim()}
             )
             
             return updatedMessage;
@@ -111,7 +114,7 @@ const MessageModel = {
 
     deleteMessage: async (messageId: string) => {
         try {
-            const message = await Message.findById(messageId);
+            const message = await Message.findOne({id:messageId});
             if (!message) {
                 throw new Error("Message not found");
             }
@@ -121,10 +124,10 @@ const MessageModel = {
             }
             
             // Soft delete - mark as deleted instead of removing from database
-            const deletedMessage = await Message.findByIdAndUpdate(
-                messageId,
+            const deletedMessage = await Message.findOneAndUpdate(
+                {id:messageId},
                 { deleted: true },
-            );
+            )
             
             return deletedMessage;
         } catch (error) {
@@ -153,6 +156,7 @@ const MessageModel = {
 
     // Additional useful methods
     addFileMessage: async (
+        firstname:string,
         chat: string, 
         content: string, 
         sender: string,
@@ -172,6 +176,7 @@ const MessageModel = {
                 type,
                 replyTo: replyTo || null,
                 profile,
+                firstname,
             });
             
             await message.save();

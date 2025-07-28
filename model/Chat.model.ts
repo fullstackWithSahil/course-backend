@@ -41,7 +41,7 @@ const ChatModel = {
             const chat = new Chat({
                 teacher,
                 name,
-                members: [teacher,student],
+                members: teacher==student?[teacher]:[teacher,student],
                 group: group || true,
             });
             await chat.save();

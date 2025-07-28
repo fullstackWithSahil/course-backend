@@ -32,7 +32,7 @@ export async function createChat(req: Request, res: Response) {
             return; 
         }
         
-        const chat = await ChatModel.createChat(teacher.trim(),name,student,true);
+        const chat = await ChatModel.createChat(teacher.trim(),name,student.trim(),true);
         
         res.status(201).json({
             success: true,

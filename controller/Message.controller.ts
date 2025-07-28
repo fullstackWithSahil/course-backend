@@ -21,14 +21,14 @@ export async function getMessagesByChatId(req: Request, res: Response) {
 
 export async function createMessage(req: Request, res: Response) {
 	try {
-		const { chat, sender, content, replyTo,profile,firstname } = req.body;
+		const { chat, sender, content, replyTo,profile,firstname,id } = req.body;
 		const checkBan = await ChatModel.getChatById(chat);
 		if (checkBan.bannedMembers.includes(sender)) {
 			res.status(200).json({ error: "You are banned from this chat" });
 			return; 
 		}
 		const message = await MessageModel.addMessage(
-			chat, content, sender,profile,firstname, replyTo
+			id, chat, content, sender,profile,firstname, replyTo
 		);
 		res.status(201).json(message);
 	} catch (err) {
@@ -61,9 +61,9 @@ export async function deleteMessage(req: Request, res: Response) {
 
 export async function uplodeFile(req:Request,res:Response){
 	try {
-		const {chat,sender,content,replyTo,type,profile} = req.body;
+		const {chat,sender,content,replyTo,type,profile,firstname} = req.body;
 		console.log(req.body);
-		const image = await MessageModel.addFileMessage(chat,content,sender,profile,type,replyTo);
+		const image = await MessageModel.addFileMessage(chat,firstname,content,sender,profile,type,replyTo);
 		res.json(image)
 	} catch (error) {
 		res.status(400).json({error:"Error uploding the file"})
